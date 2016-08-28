@@ -1,10 +1,18 @@
 package ch.hefr.edu.sleepyfinder;
 
+import android.Manifest;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -20,6 +28,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -28,25 +37,35 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener,GoogleMap.OnMarkerClickListener {
+import ch.hefr.edu.sleepyfinder.ch.hefr.edu.sleepyfinder.data.PlaceDownloadCallback;
+import ch.hefr.edu.sleepyfinder.ch.hefr.edu.sleepyfinder.data.WebPlaceUtilities;
+
+public class MapsActivity extends FragmentActivity implements PlaceDownloadCallback, GoogleMap.OnCameraChangeListener, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private static final int PLACE_PICKER_REQUEST = 1;
-    private HashMap<Marker,Place> markerPlaceHashMap;
+    private HashMap<Marker, Place> markerPlaceHashMap;
+
+    private HashMap<String, String> params = new HashMap<String, String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        params.put("radius", "500");
+        params.put("type", "lodging");
         mGoogleApiClient = new GoogleApiClient
                 .Builder(this)
                 .addApi(Places.GEO_DATA_API)
                 .addApi(Places.PLACE_DETECTION_API)
                 .enableAutoManage(this, this)
                 .build();
+
+
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -58,7 +77,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onStart() {
         super.onStart();
-        int PLACE_PICKER_REQUEST = 1;
+        /*int PLACE_PICKER_REQUEST = 1;
         PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
 
         try {
@@ -67,7 +86,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             e.printStackTrace();
         } catch (GooglePlayServicesNotAvailableException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -97,16 +116,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnCameraChangeListener(this);
         mMap.setOnMarkerClickListener(this);
 
-        // Add a marker in Sydney and move the camera
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Location location = locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
+        if (location != null)
+        {
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 13));
+
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(location.getLatitude(), location.getLongitude()))      // Sets the center of the map to location user
+                    .zoom(17)                 // Sets the tilt of the camera to 30 degrees
+                    .build();                   // Creates a CameraPosition from the builder
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        }
     }
 
-    public void showResult(GoogleMap map, List<Place> result){
+    public void showResult(List<Place> result){
         for(Place place : result){
-            map.addMarker(new MarkerOptions()
+            if(place == null)continue;
+            Log.i("MapsActivity",place.getLatLng().latitude +" "+place.getLatLng().longitude);
+            mMap.addMarker(new MarkerOptions()
                     .position(place.getLatLng())
-                    .title(place.getName().toString()));
+                    .title(place.getName() != null ? place.getName().toString() : "Missing name"));
         }
 
     }
@@ -123,5 +168,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Toast.makeText(this,"Cannot connect to Google map",Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onCameraChange(CameraPosition cameraPosition) {
+        Log.i("MapsActivity","update map");
+        LatLng pos = mMap.getCameraPosition().target;
+        params.put("location",pos.latitude+","+pos.longitude);
+        try {
+            WebPlaceUtilities.request(this,params,this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void doCallback(List<Place> list) {
+        final List<Place> temp = new ArrayList<Place>(list);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                showResult(temp);
+            }
+        });
     }
 }
