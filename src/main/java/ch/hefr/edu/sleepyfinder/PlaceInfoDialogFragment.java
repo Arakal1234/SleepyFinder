@@ -33,8 +33,8 @@ public class PlaceInfoDialogFragment extends DialogFragment {
         view = inflater.inflate(R.layout.place_info_dialog, null);
 
         ((TextView)view.findViewById(R.id.dialog_place_name)).setText(place.getPlace().getName());
-        ((TextView)view.findViewById(R.id.dialog_place_Info)).setText(place.getPlace().getAddress());
         ((ImageView)view.findViewById(R.id.dialog_place_image)).setImageBitmap(place.getBitmap());
+        ((TextView)view.findViewById(R.id.dialog_place_Info)).setText(place.getPlace().getAddress());
         builder.setView(view).setNegativeButton("cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 PlaceInfoDialogFragment.this.getDialog().cancel();

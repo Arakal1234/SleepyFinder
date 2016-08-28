@@ -32,7 +32,6 @@ public class DownloadTask extends AsyncTask<URL,Void,List<Place>> {
         BufferedReader in = null;
         List<Place> list = new ArrayList<Place>();
         try {
-            Log.i("DownloadTask",url.toString());
             URLConnection yc = url[0].openConnection();
             in = new BufferedReader(
                     new InputStreamReader(

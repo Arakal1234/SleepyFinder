@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Log;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -43,6 +44,8 @@ public class HttpUtilities {
             e = i.next();
             url += "&"+e.getKey()+"="+e.getValue();
         }
+
+        Log.i("DownloadTask",url);
         return new URL(url);
     }
 }

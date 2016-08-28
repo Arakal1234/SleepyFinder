@@ -187,7 +187,7 @@ public class MapsActivity extends FragmentActivity implements PlaceDownloadCallb
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         Range range = (Range) parent.getItemAtPosition(position);
         int rangeValue = range.getRange();
-        Toast.makeText(this,rangeValue+"m",Toast.LENGTH_SHORT).show();
+        params.put("radius",""+rangeValue);
     }
 
     @Override
