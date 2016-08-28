@@ -1,5 +1,6 @@
 package ch.hefr.edu.sleepyfinder;
 
+import android.app.DialogFragment;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
@@ -112,9 +113,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        Toast.makeText(this,"lèche mes boules",Toast.LENGTH_SHORT).show();
+        DialogFragment dialog = new PlaceInfoDialogFragment();
+        dialog.show(getFragmentManager(),"info");
         return false;
     }
+
+
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
