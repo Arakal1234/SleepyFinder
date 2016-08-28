@@ -89,32 +89,32 @@ public class MyPlace implements Place {
 
     @Override
     public String getId() {
-        return null;
+        return id;
     }
 
     @Override
     public List<Integer> getPlaceTypes() {
-        return null;
+        return placeTypes;
     }
 
     @Override
     public CharSequence getAddress() {
-        return null;
+        return address;
     }
 
     @Override
     public Locale getLocale() {
-        return null;
+        return locale;
     }
 
     @Override
     public CharSequence getName() {
-        return null;
+        return name;
     }
 
     @Override
     public LatLng getLatLng() {
-        return null;
+        return latLng;
     }
 
     @Override
@@ -124,32 +124,32 @@ public class MyPlace implements Place {
 
     @Override
     public Uri getWebsiteUri() {
-        return null;
+        return website;
     }
 
     @Override
     public CharSequence getPhoneNumber() {
-        return null;
+        return phoneNumber;
     }
 
     @Override
     public float getRating() {
-        return 0;
+        return rating;
     }
 
     @Override
     public int getPriceLevel() {
-        return 0;
+        return priceLevel;
     }
 
     @Override
     public CharSequence getAttributions() {
-        return null;
+        return attributions;
     }
 
     @Override
     public Place freeze() {
-        return null;
+        return this;
     }
 
     @Override
