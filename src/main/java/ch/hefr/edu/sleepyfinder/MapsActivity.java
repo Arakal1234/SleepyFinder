@@ -1,11 +1,9 @@
 package ch.hefr.edu.sleepyfinder;
 
 import android.Manifest;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
@@ -13,25 +11,19 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+
 import android.util.Log;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.location.places.GeoDataApi;
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceBuffer;
-import com.google.android.gms.location.places.PlaceDetectionApi;
-import com.google.android.gms.location.places.PlacePhotoMetadata;
-import com.google.android.gms.location.places.PlacePhotoMetadataResult;
-import com.google.android.gms.location.places.PlacePhotoResult;
 import com.google.android.gms.location.places.Places;
-import com.google.android.gms.location.places.internal.PlaceImpl;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -41,21 +33,19 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import ch.hefr.edu.sleepyfinder.ch.hefr.edu.sleepyfinder.data.PlaceDownloadCallback;
 import ch.hefr.edu.sleepyfinder.ch.hefr.edu.sleepyfinder.data.PlaceInfo;
 import ch.hefr.edu.sleepyfinder.ch.hefr.edu.sleepyfinder.data.PlaceInfoTask;
 import ch.hefr.edu.sleepyfinder.ch.hefr.edu.sleepyfinder.data.WebPlaceUtilities;
+import ch.hefr.edu.sleepyfinder.ch.rangeEnum.Range;
 
-public class MapsActivity extends FragmentActivity implements PlaceDownloadCallback, GoogleMap.OnCameraChangeListener, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener {
+
+
+public class MapsActivity extends FragmentActivity implements PlaceDownloadCallback,GoogleMap.OnCameraChangeListener, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener,GoogleMap.OnMarkerClickListener, AdapterView.OnItemSelectedListener {
+
 
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
@@ -81,6 +71,9 @@ public class MapsActivity extends FragmentActivity implements PlaceDownloadCallb
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        Spinner spinner = (Spinner) findViewById(R.id.choose_range);
+        spinner.setAdapter(new ArrayAdapter<Range>(this,android.R.layout.simple_spinner_item,Range.values()));
+        spinner.setOnItemSelectedListener(this);
         mapFragment.getMapAsync(this);
 
     }
@@ -191,6 +184,16 @@ public class MapsActivity extends FragmentActivity implements PlaceDownloadCallb
     }
 
     @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        Range range = (Range) parent.getItemAtPosition(position);
+        int rangeValue = range.getRange();
+        Toast.makeText(this,rangeValue+"m",Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {}
+
+
     public void onCameraChange(CameraPosition cameraPosition) {
         Log.i("MapsActivity","update map");
         LatLng pos = mMap.getCameraPosition().target;
@@ -211,5 +214,6 @@ public class MapsActivity extends FragmentActivity implements PlaceDownloadCallb
                 showResult(temp);
             }
         });
+
     }
 }
