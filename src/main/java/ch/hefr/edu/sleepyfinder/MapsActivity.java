@@ -13,19 +13,29 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceDetectionApi;
 import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.internal.PlaceImpl;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener {
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.List;
+
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener,GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private static final int PLACE_PICKER_REQUEST = 1;
+    private HashMap<Marker,Place> markerPlaceHashMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +51,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
     }
 
     @Override
@@ -65,6 +76,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 String toastMsg = String.format("Place: %s", place.getName());
                 Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
                 LatLng pos = place.getLatLng();
+
                 mMap.addMarker(new MarkerOptions().position(pos).title("Marker in Sydney"));
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(pos));
                 
@@ -84,8 +96,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnMarkerClickListener(this);
 
         // Add a marker in Sydney and move the camera
+    }
+
+    public void showResult(GoogleMap map, List<Place> result){
+        for(Place place : result){
+            map.addMarker(new MarkerOptions()
+                    .position(place.getLatLng())
+                    .title(place.getName().toString()));
+        }
+
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        Toast.makeText(this,"lèche mes boules",Toast.LENGTH_SHORT).show();
+        return false;
     }
 
     @Override
