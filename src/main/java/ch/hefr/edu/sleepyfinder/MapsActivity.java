@@ -1,7 +1,6 @@
 package ch.hefr.edu.sleepyfinder;
 
 import android.Manifest;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -38,6 +37,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import ch.hefr.edu.sleepyfinder.ch.hefr.edu.sleepyfinder.data.PlaceDownloadCallback;
+import ch.hefr.edu.sleepyfinder.ch.hefr.edu.sleepyfinder.data.PlaceInfo;
+import ch.hefr.edu.sleepyfinder.ch.hefr.edu.sleepyfinder.data.PlaceInfoTask;
 import ch.hefr.edu.sleepyfinder.ch.hefr.edu.sleepyfinder.data.WebPlaceUtilities;
 import ch.hefr.edu.sleepyfinder.ch.rangeEnum.Range;
 
@@ -49,7 +50,7 @@ public class MapsActivity extends FragmentActivity implements PlaceDownloadCallb
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private static final int PLACE_PICKER_REQUEST = 1;
-    private HashMap<Marker, Place> markerPlaceHashMap;
+    private HashMap<Marker, Place> markerPlaceHashMap = new HashMap<Marker,Place>();
 
     private HashMap<String, String> params = new HashMap<String, String>();
 
@@ -150,19 +151,28 @@ public class MapsActivity extends FragmentActivity implements PlaceDownloadCallb
 
     public void showResult(List<Place> result){
         for(Place place : result){
+            if(markerPlaceHashMap.containsValue(place))continue;
             if(place == null)continue;
             Log.i("MapsActivity",place.getLatLng().latitude +" "+place.getLatLng().longitude);
-            mMap.addMarker(new MarkerOptions()
+            markerPlaceHashMap.put(mMap.addMarker(new MarkerOptions()
                     .position(place.getLatLng())
-                    .title(place.getName() != null ? place.getName().toString() : "Missing name"));
+                    .title(place.getName() != null ? place.getName().toString() : "Missing name")),place);
         }
 
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        DialogFragment dialog = new PlaceInfoDialogFragment();
-        dialog.show(getFragmentManager(),"info");
+        Place p = markerPlaceHashMap.get(marker);
+
+        new PlaceInfoTask(mGoogleApiClient){
+            @Override
+            protected void onPostExecute(PlaceInfo place) {
+                PlaceInfoDialogFragment dialog = new PlaceInfoDialogFragment();
+                dialog.setPlace(place);
+                dialog.show(getFragmentManager(),"info");
+            }
+        }.execute(p.getId());
         return false;
     }
 
