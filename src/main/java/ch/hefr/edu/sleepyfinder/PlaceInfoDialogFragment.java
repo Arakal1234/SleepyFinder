@@ -31,10 +31,10 @@ public class PlaceInfoDialogFragment extends DialogFragment {
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
         view = inflater.inflate(R.layout.place_info_dialog, null);
-
         ((TextView)view.findViewById(R.id.dialog_place_name)).setText(place.getPlace().getName());
         ((ImageView)view.findViewById(R.id.dialog_place_image)).setImageBitmap(place.getBitmap());
-        ((TextView)view.findViewById(R.id.dialog_place_Info)).setText(place.getPlace().getAddress());
+        String placeinformation =BuildPlaceInfoString();
+        ((TextView)view.findViewById(R.id.dialog_place_Info)).setText(placeinformation);
         builder.setView(view).setNegativeButton("cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 PlaceInfoDialogFragment.this.getDialog().cancel();
@@ -42,5 +42,38 @@ public class PlaceInfoDialogFragment extends DialogFragment {
         });
 
         return builder.create();
+    }
+
+    private String BuildPlaceInfoString() {
+        Place currentplace = place.getPlace();
+        String adresse =  currentplace.getAddress()==null?"no adress found":(String) currentplace.getAddress();
+        String phone =  currentplace.getPhoneNumber()==null?"no phone number found":(String) currentplace.getPhoneNumber();
+        String url =currentplace.getWebsiteUri()==null?"no website found":currentplace.getWebsiteUri().toString();
+        int priceLevel =currentplace.getPriceLevel();
+        String price="";
+        if(priceLevel<0){
+            price="unknown";
+        }
+        else{
+            switch (priceLevel){
+                case 0:
+                    price ="Free";
+                    break;
+                case 1:
+                    price ="Inexpensive";
+                    break;
+                case 2:
+                    price ="Moderate";
+                    break;
+                case 3:
+                    price ="Expensive";
+                    break;
+                case 4:
+                    price ="Very Expensive";
+                    break;
+            }
+        }
+        String rating = currentplace.getRating()<0?"no rating aviable":String.format("%s/5.0",String.valueOf(currentplace.getRating())) ;
+        return String.format("%s\nphone: %s\n%s\nprice: %s\nrating: %s",adresse,phone,url,price,rating);
     }
 }

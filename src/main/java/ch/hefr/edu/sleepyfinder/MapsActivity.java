@@ -81,16 +81,6 @@ public class MapsActivity extends FragmentActivity implements PlaceDownloadCallb
     @Override
     protected void onStart() {
         super.onStart();
-        /*int PLACE_PICKER_REQUEST = 1;
-        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-
-        try {
-            startActivityForResult(builder.build(this), PLACE_PICKER_REQUEST);
-        } catch (GooglePlayServicesRepairableException e) {
-            e.printStackTrace();
-        } catch (GooglePlayServicesNotAvailableException e) {
-            e.printStackTrace();
-        }*/
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -136,6 +126,7 @@ public class MapsActivity extends FragmentActivity implements PlaceDownloadCallb
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
+
         Location location = locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
         if (location != null)
         {
